@@ -5,9 +5,17 @@
 package it.polito.tdp.PremierLeague;
 
 import java.net.URL;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
 import java.util.ResourceBundle;
 
+import org.jgrapht.Graph;
+import org.jgrapht.graph.DefaultWeightedEdge;
+
+import it.polito.tdp.PremierLeague.model.Arco;
 import it.polito.tdp.PremierLeague.model.Model;
+import it.polito.tdp.PremierLeague.model.Team;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.scene.control.Button;
@@ -18,6 +26,7 @@ import javafx.scene.control.TextField;
 public class FXMLController {
 	
 	private Model model;
+	Graph<Team, DefaultWeightedEdge> grafo;
 
     @FXML // ResourceBundle that was given to the FXMLLoader
     private ResourceBundle resources;
@@ -35,7 +44,7 @@ public class FXMLController {
     private Button btnSimula; // Value injected by FXMLLoader
 
     @FXML // fx:id="cmbSquadra"
-    private ComboBox<?> cmbSquadra; // Value injected by FXMLLoader
+    private ComboBox<Team> cmbSquadra; // Value injected by FXMLLoader
 
     @FXML // fx:id="txtN"
     private TextField txtN; // Value injected by FXMLLoader
@@ -48,12 +57,39 @@ public class FXMLController {
 
     @FXML
     void doClassifica(ActionEvent event) {
+    	Team squadra = cmbSquadra.getValue();
+    	
+    	List<Arco> listaBattute = new ArrayList<>();
+    	List<Arco> listaMigliori = new ArrayList<>();
+    	
+    	for(DefaultWeightedEdge e : this.grafo.edgeSet()) {
+    		if(this.grafo.getEdgeSource(e).equals(squadra)) {
+    			listaBattute.add(new Arco(this.grafo.getEdgeSource(e), this.grafo.getEdgeTarget(e), (int) this.grafo.getEdgeWeight(e)));
+    		}
+    	}
+    	
+    	Collections.sort(listaBattute);
+    	
+    	txtResult.appendText("PEGGIORI: "+"\n");
+    	for(Arco a : listaBattute) {
+    		txtResult.appendText(a.getDestinazione() +" "+a.getPeso()+"\n");
+    	}
 
     }
 
     @FXML
     void doCreaGrafo(ActionEvent event) {
+    	
+    	txtResult.clear();
+    	txtResult.appendText("Crea grafo...\n");
+    	
+    	
+    	grafo = this.model.creaGrafo();
+    	
+    	txtResult.appendText("grafo creato con "+grafo.vertexSet().size()+" vertici, e "+grafo.edgeSet().size()+" archi.\n");
 
+    	cmbSquadra.getItems().addAll(this.grafo.vertexSet());
+    	
     }
 
     @FXML
